@@ -1,16 +1,17 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-    const TrimiteNFT = await ethers.getContractFactory("TrimiteNFT");
+    const WalletEscrow = await ethers.getContractFactory("WalletEscrow");
     
-    const trimiteNFT = await TrimiteNFT.deploy();
-    await trimiteNFT.deployed;
+    const walletEscrow = await WalletEscrow.deploy();
+    await walletEscrow.deployed;
 
-    console.log("Contract deployed to:", trimiteNFT.address);
+    console.log("Contract deployed to:", walletEscrow.address);
 }
 
-
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
