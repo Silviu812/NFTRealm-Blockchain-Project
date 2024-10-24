@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import WalletEscrowABI from './WalletEscrow.json'; 
+import './WalletEscrow.css';
+
 
 const providerUrl = "https://sepolia.infura.io/v3/302e5352e5f243cabc272d43832be4cf"; 
 const contractAddress = "0x6EA308C30A4cE4791A8D256b7aF7fE704C5E6105"; 
