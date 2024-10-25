@@ -2,11 +2,18 @@ import React, { useState } from 'react';
 import './Navbar.css'; 
 import Profile from './Profile'; 
 
-const Navbar = ({ onConnect, address, balance }) => {
+const Navbar = ({ onConnect, balance }) => {
     const [isProfileOpen, setProfileOpen] = useState(false); 
+    const [address, setAddress] = useState(''); 
 
     const handleOpenProfile = () => {
         setProfileOpen(true);
+    };
+
+    const handleConnect = async () => {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setAddress(accounts[0]);
+        onConnect(); 
     };
 
     return (
@@ -48,13 +55,13 @@ const Navbar = ({ onConnect, address, balance }) => {
                             )}
                         </div>
                     ) : (
-                        <button className="connect-button" onClick={onConnect}>
+                        <button className="connect-button" onClick={handleConnect}>
                             Connect MetaMask
                         </button>
                     )}
                 </div>
             </div>
-            <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} />
+            <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} address={address} />
         </nav>
     );
 };
