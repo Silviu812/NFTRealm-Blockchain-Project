@@ -7,8 +7,11 @@ const Profile = ({ isOpen, onClose }) => {
     return (
         <div className="modal-overlay">
             <div className="modal-content">
+                <button className="close-button" onClick={onClose}>
+                    ×
+                </button>
                 <h2>Profile</h2>
-                <button onClick={onClose}>Close</button>
+                <p>Your profile details go here.</p>
             </div>
         </div>
     );
