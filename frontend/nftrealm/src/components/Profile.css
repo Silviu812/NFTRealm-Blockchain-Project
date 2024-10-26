@@ -40,3 +40,39 @@
     justify-content: center;
     border-radius: 5px; 
 }
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.add-bidding-button {
+    background-color: #90ee90; 
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.add-bidding-button:hover {
+    background-color: #76c76c; 
+}
+
+.withdraw-button {
+    background-color: #ff6347; 
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.withdraw-button:hover {
+    background-color: #e53e35; 
+}

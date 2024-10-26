@@ -1,10 +1,30 @@
-import React, { useState } from 'react'; 
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers'; 
 import './Navbar.css'; 
-import Profile from './Profile'; 
+import WalletEscrowABI from '../WalletEscrow.json';
+import Profile from './Profile';
+import { WALLETESCROW_ADDRESS, PROVIDERINFURA } from '../config.js';
+ 
 
-const Navbar = ({ onConnect, balance }) => {
+const Navbar = ({ onConnect }) => {
     const [isProfileOpen, setProfileOpen] = useState(false); 
-    const [address, setAddress] = useState(''); 
+    const [address, setAddress] = useState('');
+    const [escrowBalance, setEscrowBalance] = useState(0); 
+
+    useEffect(() => {
+        const fetchEscrowBalance = async () => {
+            if (address) {
+                const provider = new ethers.JsonRpcProvider(PROVIDERINFURA);
+                const contract = new ethers.Contract(WALLETESCROW_ADDRESS, WalletEscrowABI.abi, provider);
+                
+                const balance = await contract.escrowadrese(address);
+                setEscrowBalance(ethers.formatEther(balance));
+            }
+        };
+
+        fetchEscrowBalance();
+    }, [address]);
+
 
     const handleOpenProfile = () => {
         setProfileOpen(true);
@@ -24,19 +44,16 @@ const Navbar = ({ onConnect, balance }) => {
                 </div>
                 <ul className="nav-menu">
                     <li className="nav-item">
-                        <a href="/" className="nav-links">Home</a>
-                    </li>
-                    <li className="nav-item">
-                        <a href="/wallet-escrow" className="nav-links">Payment</a>
+                        <a href="/wallet-escrow" className="nav-links">Info-Escrow-System</a>
                     </li>
                 </ul>
                 <div className="nav-right">
                     {address ? (
                         <div className="balance-container">
                             <span className="balance">
-                                Power to bid: {parseFloat(balance).toFixed(2)} ETH
+                                Power to bid: {parseFloat(escrowBalance * 10).toFixed(2)} ETH
                             </span>
-                            {parseFloat(balance) < 0.001 ? (
+                            {parseFloat(escrowBalance) < 0.001 ? (
                                 <button 
                                     className="connect-button" 
                                     onClick={handleOpenProfile} 
