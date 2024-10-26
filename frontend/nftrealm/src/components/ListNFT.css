@@ -1,0 +1,38 @@
+.list-nft-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9; 
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px;
+}
+
+.list-nft-title {
+    font-size: 2rem;
+    color: #333; 
+    margin-bottom: 20px;
+}
+
+.fetch-button {
+    background-color: #4CAF50; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.fetch-button:hover {
+    background-color: #45a049;
+}
+
+.instructions {
+    margin-top: 15px;
+    color: #666; 
+    text-align: center;
+}

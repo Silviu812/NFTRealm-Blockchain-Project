@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import ListNFT from './components/ListNFT';
 import { ethers, Wallet } from 'ethers';
 
 
@@ -40,9 +42,14 @@ function App() {
     }, [address]);
 
     return (
-        <div>
+        <Router>
             <Navbar onConnect={connectWallet} address={address} balance={balance} />
-        </div>
+            <Routes>
+                <Route path="/" element={<div>Home</div>} />
+                <Route path="/listnft" element={<ListNFT />} />
+            </Routes>
+        </Router>
+
     );
 }
 

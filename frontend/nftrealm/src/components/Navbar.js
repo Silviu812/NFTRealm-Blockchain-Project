@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ethers } from 'ethers'; 
 import './Navbar.css'; 
 import WalletEscrowABI from '../WalletEscrow.json';
@@ -44,7 +45,10 @@ const Navbar = ({ onConnect }) => {
                 </div>
                 <ul className="nav-menu">
                     <li className="nav-item">
-                        <a href="/wallet-escrow" className="nav-links">Info-Escrow-System</a>
+                        <Link to="/" className="nav-links">Home</Link> 
+                    </li>
+                    <li className="nav-item">
+                        <Link to="/listnft" className="nav-links">List Your NFT!</Link>
                     </li>
                 </ul>
                 <div className="nav-right">
