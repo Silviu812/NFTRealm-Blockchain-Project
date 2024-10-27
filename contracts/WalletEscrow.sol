@@ -2,7 +2,11 @@
 
 pragma solidity ^0.8.27;
 
-contract WalletEscrow {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract WalletEscrow is ERC721 {
+
+    constructor() ERC721("WalletEscrow", "WLE") {}
 
     mapping (address => uint) public escrowadrese;
 
@@ -12,6 +16,11 @@ contract WalletEscrow {
 
     function putere() public view returns(uint) {
         return escrowadrese[msg.sender] * 10;
+    }
+    
+    function transferNFT(address to, uint tokenId) external {
+        require(ownerOf(tokenId) == msg.sender, "You are not the owner");
+        _transfer(msg.sender, to, tokenId);
     }
 
     function withdrawall() public {
