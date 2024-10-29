@@ -45,7 +45,7 @@ const Navbar = ({ onConnect }) => {
                 </div>
                 <ul className="nav-menu">
                     <li className="nav-item">
-                        <Link to="/" className="nav-links">Home</Link> 
+                        <Link to="/mainpage" className="nav-links">Home</Link> 
                     </li>
                     <li className="nav-item">
                         <Link to="/listnft" className="nav-links">List Your NFT!</Link>

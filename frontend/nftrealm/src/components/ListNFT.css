@@ -66,6 +66,17 @@
     transition: background-color 0.3s ease;
 }
 
+.list-button {
+    background-color: #dfaa47; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 .fetch-button:hover {
     background-color: #45a049;
 }
@@ -84,16 +95,16 @@
 
 .nft-item {
     margin: 5px; 
-    border: 1px solid #ddd;
+    border: 5px solid #ddd;
     border-radius: 8px; 
-    padding: 4px; 
-    max-width: 100px; 
+    padding: 40px; 
+    max-width: 200px; 
     text-align: center; 
 }
 
 .nft-item img {
     max-width: 100%;
     height: auto; 
-    max-height: 80px; 
+    max-height: 800px; 
 }
 

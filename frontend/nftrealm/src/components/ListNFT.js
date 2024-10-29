@@ -64,7 +64,8 @@ const ListNFT = () => {
         }
     };
     
-    
+    const ListForBid = (nftId) => {
+    };
 
     return (
         <div className="list-nft-container">
@@ -83,6 +84,9 @@ const ListNFT = () => {
                             <img src={nft.imageUrl} alt={`NFT ${nft.name}`} />
                             <p>NFT ID: {nft.id}</p>
                             <p>Name: {nft.name}</p>
+                            <button className="list-button" onClick={() => ListForBid(nft.id)}>
+                                List NFT for Bid
+                            </button>
                         </div>
                     ))
                 ) : (
