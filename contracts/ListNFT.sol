@@ -9,6 +9,7 @@ contract ListNFT {
         uint256 amount;
         uint256 endtime;
         uint256 starttime;
+        uint tokenId;
     }
 
     uint256 public bidid = 0;
@@ -20,22 +21,24 @@ contract ListNFT {
     constructor() {
         bidid++;
         bids[bidid] = Bid({
-            thenft: 0x0000000000000000000000000000000000000001, 
+            thenft: 0x2A3FeDEB5c4aCa4b8728D53Eb8344d600dE36644, 
             maxbidder: 0x0000000000000000000000000000000000000001, 
             amount: 100,
             endtime: block.timestamp + 1 days,
-            starttime: block.timestamp
+            starttime: block.timestamp,
+            tokenId: 0
         });
     }
 
-    function createBid(address _thenft) public {
+    function createBid(address _thenft, uint256 tokenId) public {
         bidid++;
         bids[bidid] = Bid({
             thenft: _thenft,
             maxbidder: msg.sender,
             amount: 0,
             endtime: block.timestamp + 1 days,
-            starttime: block.timestamp
+            starttime: block.timestamp,
+            tokenId: tokenId
         });
         emit BidCreated(bidid, _thenft, msg.sender);
     }
@@ -52,14 +55,15 @@ contract ListNFT {
         return bidid;
     }
 
-    function getBidInfo(uint _bidid) public view returns (address, address, uint256, uint256, uint256) {
+    function getBidInfo(uint _bidid) public view returns (address, address, uint256, uint256, uint256, uint256) {
         require(_bidid > 0 && _bidid <= bidid, "Bid does not exist");
         return (
             bids[_bidid].thenft, 
             bids[_bidid].maxbidder, 
             bids[_bidid].amount, 
             bids[_bidid].endtime, 
-            bids[_bidid].starttime
+            bids[_bidid].starttime,
+            bids[_bidid].tokenId
         );
     }
 }
