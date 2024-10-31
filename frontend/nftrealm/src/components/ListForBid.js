@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 import './ListForBid.css';
+import NFTWalletABI from '../NFTWallet.json';
+import { nftContractAddress } from '../config'; 
 
-const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl }) => {
+const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa }) => {
     const [date, setDate] = useState('');
     const [minSaleEnabled, setMinSaleEnabled] = useState(false);
     const [minSale, setMinSale] = useState('');
@@ -15,22 +18,24 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl }) => {
     const handleDurationChange = (e) => {
         const selectedDuration = e.target.value;
         setDuration(selectedDuration);
-
+        
         const today = new Date();
         const newDate = new Date(today);
 
         if (selectedDuration === '1') {
-            newDate.setDate(today.getDate() + 1); 
+            newDate.setMinutes(today.getMinutes() + 1);
+        } else if (selectedDuration === '1') {
+            newDate.setDate(today.getDate() + 1);
         } else if (selectedDuration === '7') {
-            newDate.setDate(today.getDate() + 7); 
+            newDate.setDate(today.getDate() + 7);
         } else if (selectedDuration === '30') {
-            newDate.setDate(today.getDate() + 30); 
+            newDate.setDate(today.getDate() + 30);
         }
 
-        setDate(newDate.toISOString().split('T')[0]); 
+        setDate(newDate.toISOString().split('T')[0]);
     };
 
-    const handleListForBid = () => {
+    const handleListForBid = async () => {
         if (!date) {
             alert("Please fill in all fields.");
             return;
@@ -40,9 +45,44 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl }) => {
             alert("Please specify a minimum sale price.");
             return;
         }
+
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
         
-        alert("NFT listed for bid successfully! Total Cost: " + totalCost + " ETH");
-    };
+            const nftAddress = nftadresa; 
+            const targetAddress = nftContractAddress; 
+            const nftTokenId = nftId; 
+        
+            const nftContract = new ethers.Contract(nftAddress, [
+                "function safeTransferFrom(address from, address to, uint256 tokenId) external",
+                "function ownerOf(uint256 tokenId) external view returns (address)"
+            ], signer);
+        
+            const senderAddress = await signer.getAddress();
+        
+            const owner = await nftContract.ownerOf(nftTokenId);
+            if (owner !== senderAddress) {
+                throw new Error("You do not own this NFT");
+            }
+        
+            const transferTx = await nftContract.safeTransferFrom(
+                senderAddress, 
+                targetAddress, 
+                nftTokenId 
+            );
+        
+            await transferTx.wait();
+        
+            console.log(`NFT-ul a fost transferat la ${targetAddress}`);
+            alert("NFT sent to wallet successfully!");
+        
+        } catch (error) {
+            console.error("Error sending NFT:", error);
+            alert("Failed to send NFT. Please check the console for details.");
+        }
+        
+    };        
 
     if (!isOpen) return null;
 
@@ -63,6 +103,15 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl }) => {
 
                 <div className="duration-options">
                     <h3>Select Duration:</h3>
+                    <label>
+                        <input
+                            type="radio"
+                            value="1"
+                            checked={duration === '1'}
+                            onChange={handleDurationChange}
+                        />
+                        1 Minute
+                    </label>
                     <label>
                         <input
                             type="radio"

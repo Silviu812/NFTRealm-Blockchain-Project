@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import './ListNFT.css'; 
+import ListForBid from './ListForBid'; 
 
 const ListNFT = () => {
     const [nfts, setNfts] = useState([]);
     const [error, setError] = useState(null);
+    const [selectedNft, setSelectedNft] = useState(null);
+    const [selectedNftName, setSelectedNftName] = useState('');
+    const [selectedNftImageUrl, setSelectedNftImageUrl] = useState('');
+    const [selectedNftTKID, setSelectedNftTKID] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedNftAdresa, setSelectedNftAdresa] = useState('');
 
     const fetchNFTs = async () => {
         if (!window.ethereum) {
@@ -19,7 +26,7 @@ const ListNFT = () => {
         }
     
         const walletAddress = accounts[0];
-        const apiKey = "a49ad168cca94135a02e9250211684bd"; //NU CRED CA E NEVOIE
+        const apiKey = "a49ad168cca94135a02e9250211684bd"; 
         const apiUrl = `https://testnets-api.opensea.io/api/v2/chain/sepolia/account/${walletAddress}/nfts`;
     
         try {
@@ -36,24 +43,18 @@ const ListNFT = () => {
             }
     
             const data = await response.json();
-    
-            
-            console.log(data);
-    
-            
             const nftsWithImages = (data.nfts && Array.isArray(data.nfts)) ? data.nfts.map(nft => {
-                console.log(`NFT ID: ${nft.identifier}, Image URL: ${nft.image_url}`); 
                 return {
                     id: nft.identifier, 
                     name: nft.name, 
                     imageUrl: nft.image_url || '', 
+                    tokenId: nft.token_id || '',
+                    adresa: nft.contract
                 };
             }) : [];
     
-
             setNfts(nftsWithImages);
     
-
             if (nftsWithImages.length === 0) {
                 alert("No NFTs found for this wallet.");
             }
@@ -63,15 +64,30 @@ const ListNFT = () => {
             alert(`Error: ${error.message}`);
         }
     };
-    
-    const ListForBid = (nftId) => {
+
+    const handleOpenListForBid = (nft) => {
+        setSelectedNft(nft.id);
+        setSelectedNftName(nft.name);
+        setSelectedNftImageUrl(nft.imageUrl);
+        setSelectedNftTKID(nft.tokenId);
+        setIsModalOpen(true);
+        setSelectedNftAdresa(nft.adresa);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedNft(null);
+        setSelectedNftName('');
+        setSelectedNftImageUrl('');
+        setSelectedNftTKID('');
+        setSelectedNftAdresa('');
     };
 
     return (
         <div className="list-nft-container">
             <h1 className="list-nft-title">List Your NFT!</h1>
             <button className="fetch-button" onClick={fetchNFTs}>
-                {'Fetch Available NFTs for Listing'}
+                Fetch Available NFTs for Listing
             </button>
             {error && <p className="error-message">{error}</p>}
             <p className="instructions">
@@ -84,7 +100,10 @@ const ListNFT = () => {
                             <img src={nft.imageUrl} alt={`NFT ${nft.name}`} />
                             <p>NFT ID: {nft.id}</p>
                             <p>Name: {nft.name}</p>
-                            <button className="list-button" onClick={() => ListForBid(nft.id)}>
+                            <button 
+                                className="list-button" 
+                                onClick={() => handleOpenListForBid(nft)}
+                            >
                                 List NFT for Bid
                             </button>
                         </div>
@@ -93,6 +112,18 @@ const ListNFT = () => {
                     <p>No NFTs found.</p>
                 )}
             </div>
+
+            {isModalOpen && (
+                <ListForBid 
+                    isOpen={isModalOpen} 
+                    onClose={handleCloseModal} 
+                    nftId={selectedNft} 
+                    nftName={selectedNftName}
+                    nftImageUrl={selectedNftImageUrl}
+                    nftTokenId={selectedNftTKID}
+                    nftadresa={selectedNftAdresa}
+                />
+            )}
         </div>
     );
 };
