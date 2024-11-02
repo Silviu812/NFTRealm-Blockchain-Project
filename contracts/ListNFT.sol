@@ -35,7 +35,7 @@ contract ListNFT {
         bids[bidid] = Bid({
             thenft: _thenft,
             maxbidder: msg.sender,
-            amount: 0,
+            amount: 100,
             endtime: block.timestamp + 1 days,
             starttime: block.timestamp,
             tokenId: tokenId
@@ -65,5 +65,17 @@ contract ListNFT {
             bids[_bidid].starttime,
             bids[_bidid].tokenId
         );
+    }
+
+    function getBidWinner(uint _bidid) public view returns (address, uint256) {
+        require(bids[_bidid].endtime < block.timestamp, "Bid has not ended");
+        return (bids[_bidid].maxbidder, bids[_bidid].amount);
+    }
+
+    function newbidamount(uint _bidid, uint256 _amount) public {
+        require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
+        require(bids[_bidid].amount < _amount, "Bid is too low");
+        bids[_bidid].maxbidder == msg.sender;
+        bids[_bidid].amount = _amount;
     }
 }
