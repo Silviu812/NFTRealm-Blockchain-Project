@@ -31,6 +31,10 @@ contract NFTWallet is IERC721Receiver {
         
         NftOwner storage nftOwner = listNftOwner[from];
         
+        if (nftOwner.nftContracts[msg.sender].nftIds.length == 0) {
+            nftOwner.contractAddresses.push(msg.sender);
+        }
+
         nftOwner.nftContracts[msg.sender].nftIds.push(tokenId);
         nftOwner.nftContracts[msg.sender].available = false;
 
@@ -41,6 +45,7 @@ contract NFTWallet is IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
+    
     function NFTUtilizator(address owner) external view returns (address[] memory, uint256[][] memory) {
         NftOwner storage nftOwner = listNftOwner[owner];
         
@@ -99,6 +104,18 @@ contract NFTWallet is IERC721Receiver {
 
         if (ids.length == 0) {
             delete listNftOwner[owner].nftContracts[nftContract];
+        }
+    }
+
+
+    function getNFTs(address owner) external view returns (address[] memory contracts, uint256[][] memory ids) {
+        NftOwner storage nftOwner = listNftOwner[owner];
+
+        contracts = nftOwner.contractAddresses; 
+        ids = new uint256[][](contracts.length); 
+
+        for (uint256 i = 0; i < contracts.length; i++) {
+            ids[i] = nftOwner.nftContracts[contracts[i]].nftIds;
         }
     }
 }
