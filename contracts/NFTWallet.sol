@@ -89,17 +89,30 @@ contract NFTWallet is IERC721Receiver {
         NftOwner storage nftOwner = listNftOwner[owner];
 
         uint256 contractCount = nftOwner.contractAddresses.length;
-        contracts = new address[](contractCount); 
-        ids = new uint256[][](contractCount); 
+
+        address[] memory tempContracts = new address[](contractCount);
+        uint256[][] memory tempIds = new uint256[][](contractCount);
+        uint256 resultCount = 0; 
 
         for (uint256 i = 0; i < contractCount; i++) {
-            contracts[i] = nftOwner.contractAddresses[i];
-            ids[i] = nftOwner.nftContracts[contracts[i]].nftIds;
+            address contractAddress = nftOwner.contractAddresses[i];
+            if (nftOwner.nftContracts[contractAddress].available) {
+                tempContracts[resultCount] = contractAddress;
+                tempIds[resultCount] = nftOwner.nftContracts[contractAddress].nftIds;
+                resultCount++;
+            }
+        }
+
+        contracts = new address[](resultCount);
+        ids = new uint256[][](resultCount);
+        
+        for (uint256 i = 0; i < resultCount; i++) {
+            contracts[i] = tempContracts[i];
+            ids[i] = tempIds[i];
         }
     }
 
-
-    function BidFinished(address nftContract, uint256 tokenId) external {
+    function BidFinished(address nftContract, uint256 tokenId) external { //necesita modificari
         listNftOwner[msg.sender].nftContracts[nftContract].available = true;
     }
 }

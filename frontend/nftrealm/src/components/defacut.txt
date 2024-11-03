@@ -1,0 +1,8 @@
+BID FOR NFT (CU ESCROW)
+
+aici de adaugat si verificare min Bid
+
+
+PAY FOR NFT AFTER FINISH (la payment o sa faca nft ul available)
+DACA NU PAY atunci vanzatorul face nft ul redeemable platind gas fee ul
+Withdraw nft

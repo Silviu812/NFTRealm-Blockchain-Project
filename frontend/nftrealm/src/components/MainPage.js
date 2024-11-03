@@ -3,14 +3,14 @@ import { ethers } from 'ethers';
 import MainPageABI from '../ListNFT.json'; 
 import { CONTRACT_LISTNFT, PROVIDERINFURA } from '../config';
 import './MainPage.css';
-
-
-//BUG LA CONVERTIREA BIGNUMBER IN DATE
+import PlaceBid from './PlaceBid';
 
 const MainPage = () => {
     const [bids, setBids] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [currentBid, setCurrentBid] = useState(null);
     
     const fetchBids = async () => {
         const provider = new ethers.JsonRpcProvider(PROVIDERINFURA);
@@ -18,34 +18,31 @@ const MainPage = () => {
     
         try {
             const bidCount = await contract.getBidCount();
-    
-            if (bidCount > 0) {
-                const bidsArray = [];
-                for (let i = 1; i <= bidCount; i++) {
-                    const [thenft, maxbidder, amount, endtime, starttime, tokenId] = await contract.getBidInfo(i);
-                    console.log(`Bid Info for ID ${i}:`, { thenft, maxbidder, amount, endtime, starttime });
+            const bidsArray = [];
 
-                    const nftImageUrl = await getNftImageUrl(thenft, tokenId); 
-                    const nftName = await getNftName(thenft, tokenId);
+            for (let i = 1; i <= bidCount; i++) {
+                const [thenft, maxbidder, amount, endtime, starttime, tokenId] = await contract.getBidInfo(i);
+                const nftImageUrl = await getNftImageUrl(thenft, tokenId); 
+                const nftName = await getNftName(thenft, tokenId);
 
-                    if (amount) { 
-                        const amountInEth = ethers.formatEther(amount.toString());
-                        bidsArray.push({
-                            tokenId: i,
-                            amount: amountInEth,
-                            bidder: maxbidder,
-                            nftImage: nftImageUrl, 
-                            nftName: nftName,
-                            endtime: Number(endtime), 
-                        });
-                    } else {
-                        console.warn(`No amount found for bid ID ${i}`);
-                    }
+                if (amount) { 
+                    const amountInEth = ethers.formatEther(amount);
+                    //const protectionInEth = ethers.formatEther(protection);
+                    bidsArray.push({
+                        bidId: i,
+                        tokenId,
+                        amount: amountInEth,
+                        bidder: maxbidder,
+                        nftImage: nftImageUrl, 
+                        nftName: nftName,
+                        endtime: Number(endtime),
+                        //protection: protectionInEth, 
+                    });
+                } else {
+                    console.warn(`No amount found for bid ID ${i}`);
                 }
-                setBids(bidsArray);
-            } else {
-                console.log("No bids available.");
             }
+            setBids(bidsArray);
         } catch (error) {
             console.error("Error fetching bids:", error);
             setError("Error fetching bids. Please try again later.");
@@ -113,14 +110,33 @@ const MainPage = () => {
         if (timeLeft <= 0) {
             return { message: 'Bid finished', isFinished: true };
         }
-
         const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
         const seconds = Math.floor((timeLeft / 1000) % 60);
         return { message: `${minutes}m ${seconds}s`, isFinished: false };
     };
 
+    const openModal = (bid) => {
+        setCurrentBid({
+            bidId: bid.bidId,
+            tokenId: bid.tokenId,
+            amount: bid.amount,
+            nftImage: bid.nftImage,
+            nftName: bid.nftName,
+            endtime: bid.endtime,
+            bidder: bid.bidder,
+            protection: bid.protection
+        });
+        setModalOpen(true);
+    };    
+
     useEffect(() => {
-        fetchBids();
+        fetchBids(); 
+
+        const intervalId = setInterval(() => {
+            fetchBids();
+        }, 5000); 
+
+        return () => clearInterval(intervalId); 
     }, []);
 
     return (
@@ -147,6 +163,7 @@ const MainPage = () => {
                                             className="bid-button" 
                                             disabled={isFinished} 
                                             style={{ backgroundColor: isFinished ? '#ccc' : '#007bff' }}
+                                            onClick={() => !isFinished && openModal(bid)} 
                                         >
                                             {isFinished ? 'Bid finished' : 'Place Bid!'}
                                         </button>
@@ -162,6 +179,11 @@ const MainPage = () => {
                     )}
                 </div>
             )}
+            <PlaceBid 
+                isOpen={modalOpen} 
+                onClose={() => setModalOpen(false)} 
+                currentBid={currentBid} 
+            />
         </div>
     );
 }
