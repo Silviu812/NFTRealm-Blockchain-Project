@@ -27,11 +27,10 @@ const WithdrawNFT = () => {
         const apiKey = "a49ad168cca94135a02e9250211684bd"; 
 
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const walletnftcontract = new ethers.Contract(walletnft, NFTWalletABI.abi, provider.getSigner());
+        const walletnftcontract = new ethers.Contract(walletnft, NFTWalletABI.abi, provider);
 
         try {
             const [contracts, ids] = await walletnftcontract.getNFTs(walletAddress);
-
             const nftsWithImages = [];
             
             for (let i = 0; i < contracts.length; i++) {
@@ -60,13 +59,14 @@ const WithdrawNFT = () => {
                         adresa: contractAddress
                     });
 
-                    setNfts(nftsWithImages);
-    
-                    if (nftsWithImages.length === 0) {
-                        alert("No NFTs found for this wallet.");
-                    }
+        
+                }
+                setNfts(nftsWithImages);
+                if (nftsWithImages.length === 0) {
+                    alert("No NFTs found for this wallet.");
                 }
             }
+            console.log("da");
         }
         catch (error) {
             console.error("Error fetching NFTs:", error);

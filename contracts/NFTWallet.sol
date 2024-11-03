@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./ListNFT.sol";
 
@@ -14,9 +15,10 @@ contract NFTWallet is IERC721Receiver {
 
     struct NftOwner {
         mapping(address => NftDetails) nftContracts; 
+        address[] contractAddresses;
     }
 
-    mapping(address => NftOwner) public listNftOwner;
+    mapping(address => NftOwner) internal listNftOwner;
 
     ListNFT public listNftContract;
 
@@ -36,7 +38,7 @@ contract NFTWallet is IERC721Receiver {
         }
 
         nftOwner.nftContracts[msg.sender].nftIds.push(tokenId);
-        nftOwner.nftContracts[msg.sender].available = false;
+        nftOwner.nftContracts[msg.sender].available = true;
 
         emit NFTReceived(from, msg.sender, tokenId);
 
@@ -45,44 +47,20 @@ contract NFTWallet is IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    
-    function NFTUtilizator(address owner) external view returns (address[] memory, uint256[][] memory) {
-        NftOwner storage nftOwner = listNftOwner[owner];
-        
-        uint256 contractCount = 0;
-        for (uint256 i = 0; i < 256; i++) {
-            if (nftOwner.nftContracts[address(i)].nftIds.length > 0) {
-                contractCount++;
-            }
-        }
-
-        address[] memory contracts = new address[](contractCount); //adrese contracte nft
-        uint256[][] memory ids = new uint256[][](contractCount); //matrice pentru ca id contract nft sa aiba id-urile nft-urilor
-
-        uint256 index = 0;
-        for (uint256 i = 0; i < 256; i++) {
-            if (nftOwner.nftContracts[address(i)].nftIds.length > 0) {
-                contracts[index] = address(i);
-                ids[index] = nftOwner.nftContracts[address(i)].nftIds;
-                index++;
-            }
-        }
-        
-        return (contracts, ids);
-    }
-
-    function BidFinished(address owner) external {
-        for (uint256 i = 0; i < 256; i++) {
-            if (listNftOwner[owner].nftContracts[address(i)].nftIds.length > 0) {
-                listNftOwner[owner].nftContracts[address(i)].available = true;
-            }
-        }
-    }
-
     function changeowner(address owner, address newOwner) external {
-        listNftOwner[newOwner] = listNftOwner[owner];
+        require(listNftOwner[owner].contractAddresses.length > 0, "No NFTs to transfer");
+        
+        NftOwner storage oldOwner = listNftOwner[owner];
+        NftOwner storage newOwnerStruct = listNftOwner[newOwner];
+
+        for (uint256 i = 0; i < oldOwner.contractAddresses.length; i++) {
+            address contractAddress = oldOwner.contractAddresses[i];
+            newOwnerStruct.nftContracts[contractAddress] = oldOwner.nftContracts[contractAddress];
+        }
+
         delete listNftOwner[owner];
     }
+
 
     function withdrawNFT(address owner, address nftContract, uint256 id) external {
         require(listNftOwner[owner].nftContracts[nftContract].available, "NFT is not available");
@@ -107,15 +85,21 @@ contract NFTWallet is IERC721Receiver {
         }
     }
 
-
     function getNFTs(address owner) external view returns (address[] memory contracts, uint256[][] memory ids) {
         NftOwner storage nftOwner = listNftOwner[owner];
 
-        contracts = nftOwner.contractAddresses; 
-        ids = new uint256[][](contracts.length); 
+        uint256 contractCount = nftOwner.contractAddresses.length;
+        contracts = new address[](contractCount); 
+        ids = new uint256[][](contractCount); 
 
-        for (uint256 i = 0; i < contracts.length; i++) {
+        for (uint256 i = 0; i < contractCount; i++) {
+            contracts[i] = nftOwner.contractAddresses[i];
             ids[i] = nftOwner.nftContracts[contracts[i]].nftIds;
         }
+    }
+
+
+    function BidFinished(address nftContract, uint256 tokenId) external {
+        listNftOwner[msg.sender].nftContracts[nftContract].available = true;
     }
 }
