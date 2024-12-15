@@ -12,9 +12,11 @@ contract WalletEscrow is ERC721Enumerable {
     constructor() ERC721("WalletEscrow", "WAL") {}
 
     mapping (address => uint) public escrowadrese;
+    mapping (address => uint) public escrowpower;
 
     function pay() public payable {
         escrowadrese[msg.sender] += msg.value;
+        escrowpower[msg.sender] += msg.value * 10;
     }
     
     function getOwnedNFTs() public returns(uint[] memory) {
@@ -41,10 +43,28 @@ contract WalletEscrow is ERC721Enumerable {
         _transfer(msg.sender, to, tokenId);
     }
 
+    function takepower(uint amount) public {
+        escrowpower[msg.sender] -= amount;
+    }
+
+    function givepower(address to, uint amount) public {
+        escrowpower[to] += amount;
+    }
+
     function withdrawall() public {
         uint amount = escrowadrese[msg.sender];
         require(amount > 0, "No funds to withdraw");
         escrowadrese[msg.sender] = 0;
+        escrowpower[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
+    }
+
+    function payforbid(address who, uint sum) public {
+        require(escrowadrese[msg.sender] >= sum, "Not enough funds");
+        require(escrowpower[msg.sender] >= sum * 9, "Not enough power");
+        escrowadrese[msg.sender] -= sum;
+        escrowpower[msg.sender] -= sum * 9; //returneaza garantia
+        escrowadrese[who] += sum;
+        escrowpower[who] += sum * 10;
     }
 }

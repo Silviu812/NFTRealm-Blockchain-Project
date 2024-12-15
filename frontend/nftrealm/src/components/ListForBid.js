@@ -24,7 +24,7 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
 
         if (selectedDuration === '1') {
             newDate.setMinutes(today.getMinutes() + 1);
-        } else if (selectedDuration === '1') {
+        } else if (selectedDuration === '1d') {
             newDate.setDate(today.getDate() + 1);
         } else if (selectedDuration === '7') {
             newDate.setDate(today.getDate() + 7);
@@ -40,12 +40,12 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
             alert("Please fill in all fields.");
             return;
         }
-
+    
         if (minSaleEnabled && !minSale) {
             alert("Please specify a minimum sale price.");
             return;
         }
-
+    
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
@@ -56,8 +56,11 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
         
             const nftContract = new ethers.Contract(nftAddress, [
                 "function safeTransferFrom(address from, address to, uint256 tokenId) external",
-                "function ownerOf(uint256 tokenId) external view returns (address)"
+                "function ownerOf(uint256 tokenId) external view returns (address)",
+                "function setDataaleasa(uint256 _value) external"
             ], signer);
+
+            const nftWContract = new ethers.Contract(targetAddress, NFTWalletABI.abi, signer);
         
             const senderAddress = await signer.getAddress();
         
@@ -65,15 +68,44 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
             if (owner !== senderAddress) {
                 throw new Error("You do not own this NFT");
             }
-        
+    
+            const selectedDuration = duration;
+            let _value;
+    
+            if (selectedDuration === '2') {
+                _value = 4;
+                console.log(`Setting dataaleasa with value: ${_value}`);
+                const setDataTx = await nftWContract.setDatad();
+                await setDataTx.wait();
+                console.log("setDataaleasa executed successfully!"); 
+            } else if (selectedDuration === '1') {
+                _value = 1;
+                console.log(`Setting dataaleasa with value: ${_value}`);
+                const setDataTx = await nftWContract.setDataa();
+                await setDataTx.wait();
+            } else if (selectedDuration === '7') {
+                _value = 2;
+                console.log(`Setting dataaleasa with value: ${_value}`);
+                const setDataTx = await nftWContract.setDatab();
+                await setDataTx.wait();
+            } else if (selectedDuration === '30') {
+                _value = 3;
+                console.log(`Setting dataaleasa with value: ${_value}`);
+                const setDataTx = await nftWContract.setDatac();
+                await setDataTx.wait();
+            }
+            
+            const currentDataValue = await nftWContract.data();
+            console.log("Current dataaleasa value:", currentDataValue.toString());
+
+            
             const transferTx = await nftContract.safeTransferFrom(
                 senderAddress, 
                 targetAddress, 
-                nftTokenId 
+                nftTokenId,
             );
         
             await transferTx.wait();
-        
             console.log(`NFT-ul a fost transferat la ${targetAddress}`);
             alert("NFT sent to wallet successfully!");
         
@@ -81,8 +113,8 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
             console.error("Error sending NFT:", error);
             alert("Failed to send NFT. Please check the console for details.");
         }
-        
-    };        
+    };
+    
 
     if (!isOpen) return null;
 
@@ -106,8 +138,8 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
                     <label>
                         <input
                             type="radio"
-                            value="1"
-                            checked={duration === '1'}
+                            value="2"
+                            checked={duration === '2'}
                             onChange={handleDurationChange}
                         />
                         1 Minute

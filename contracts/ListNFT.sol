@@ -34,14 +34,28 @@ contract ListNFT {
         });
     }
 
-    function createBid(address _thenft, uint256 tokenId, uint256 _protection) public {
+    function createBid(address _thenft, uint256 tokenId, uint256 _protection, uint256 _dataaleasa, address from) public {
         bidid++;
+        
+        uint256 bidDuration;
+        if (_dataaleasa == 1) {
+            bidDuration = 1 days; 
+        } else if (_dataaleasa == 2) {
+            bidDuration = 7 days; 
+        } else if (_dataaleasa == 3) {
+            bidDuration = 30 days; 
+        } else if (_dataaleasa == 4) {
+            bidDuration = 120 seconds; 
+        } else {
+            bidDuration = 1 days;
+        }
+        
         bids[bidid] = Bid({
             thenft: _thenft,
-            maxbidder: msg.sender,
-            origialowner: msg.sender,
+            maxbidder: from,
+            origialowner: from,
             amount: 100,
-            endtime: block.timestamp + 1 days,
+            endtime: block.timestamp + bidDuration,
             starttime: block.timestamp,
             tokenId: tokenId,
             protection: _protection
@@ -61,7 +75,7 @@ contract ListNFT {
         return bidid;
     }
 
-    function getBidInfo(uint _bidid) public view returns (address, address, address, uint256, uint256, uint256, uint256, uint256) {
+    function getBidInfo(uint _bidid) public view returns (address, address, address, uint256, uint256, uint256, uint256) {
         require(_bidid > 0 && _bidid <= bidid, "Bid does not exist");
         return (
             bids[_bidid].thenft, 
@@ -70,8 +84,7 @@ contract ListNFT {
             bids[_bidid].amount, 
             bids[_bidid].endtime, 
             bids[_bidid].starttime,
-            bids[_bidid].tokenId,
-            bids[_bidid].protection
+            bids[_bidid].tokenId
         );   
     }
 
@@ -83,7 +96,7 @@ contract ListNFT {
     function newbidamount(uint _bidid, uint256 _amount) public {
         require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
         require(bids[_bidid].amount < _amount, "Bid is too low");
-        require(bids[_bidid].protection < _amount, "Price over protection");
+        require(bids[_bidid].protection < _amount, "Price is protected, Bid is too low");
         bids[_bidid].amount = _amount;
         bids[_bidid].maxbidder = msg.sender;
     }
@@ -92,5 +105,11 @@ contract ListNFT {
         require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
         require(bids[_bidid].amount < _amount, "Bid is too low");
         bids[_bidid].amount = _amount;
+        bids[_bidid].maxbidder = msg.sender;
+    }
+
+    function changeownerfrombid(uint _bidid) public {
+        require(bids[_bidid].endtime < block.timestamp, "Bid has not ended");
+        bids[_bidid].origialowner = bids[_bidid].maxbidder;
     }
 }

@@ -11,6 +11,8 @@ const MainPage = () => {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [currentBid, setCurrentBid] = useState(null);
+    const [address, setAddress] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
     
     const fetchBids = async () => {
         const provider = new ethers.JsonRpcProvider(PROVIDERINFURA);
@@ -21,7 +23,7 @@ const MainPage = () => {
             const bidsArray = [];
 
             for (let i = 1; i <= bidCount; i++) {
-                const [thenft, maxbidder, amount, endtime, starttime, tokenId] = await contract.getBidInfo(i);
+                const [thenft, maxbidder, originalowner, amount, endtime, starttime, tokenId] = await contract.getBidInfo(i);
                 const nftImageUrl = await getNftImageUrl(thenft, tokenId); 
                 const nftName = await getNftName(thenft, tokenId);
 
@@ -33,6 +35,7 @@ const MainPage = () => {
                         tokenId,
                         amount: amountInEth,
                         bidder: maxbidder,
+                        og: originalowner,
                         nftImage: nftImageUrl, 
                         nftName: nftName,
                         endtime: Number(endtime),
@@ -64,9 +67,7 @@ const MainPage = () => {
                 }
             });
     
-            if (!response.ok) {
-                throw new Error(`Error fetching NFT: ${response.status} - ${response.statusText}`);
-            }
+            
     
             const data = await response.json();
             return data.nft.image_url || '';
@@ -75,6 +76,7 @@ const MainPage = () => {
             alert(`Error: ${error.message}`);
             return '';
         }
+        
     };
 
     const getNftName = async (thenft, tokenId) => {
@@ -105,17 +107,32 @@ const MainPage = () => {
 
     const calculateTimeLeft = (endtime) => {
         const now = Date.now();
-        const timeLeft = endtime * 1000 - now; 
-
+        const timeLeft = endtime * 1000 - now;
+    
         if (timeLeft <= 0) {
             return { message: 'Bid finished', isFinished: true };
         }
-        const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
-        const seconds = Math.floor((timeLeft / 1000) % 60);
-        return { message: `${minutes}m ${seconds}s`, isFinished: false };
+    
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));   
+        const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24); 
+        const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);    
+        const seconds = Math.floor((timeLeft / 1000) % 60);           
+    
+        return { 
+            message: `${days}d ${hours}h ${minutes}m ${seconds}s`, 
+            isFinished: false 
+        };
     };
+    
 
     const openModal = (bid) => {
+        if (!window.ethereum) {
+            setErrorMessage("MetaMask not installed!");
+            return;
+        }
+
+        const accounts = window.ethereum.request({ method: 'eth_requestAccounts' });
+        setAddress(accounts[0]);
         setCurrentBid({
             bidId: bid.bidId,
             tokenId: bid.tokenId,
@@ -131,13 +148,14 @@ const MainPage = () => {
 
     useEffect(() => {
         fetchBids(); 
-
+    
         const intervalId = setInterval(() => {
             fetchBids();
-        }, 5000); 
-
+        }, 10000); 
+    
         return () => clearInterval(intervalId); 
     }, []);
+    
 
     return (
         <div className="mainpage">

@@ -5,7 +5,7 @@ import './WalletEscrow.css';
 
 
 const providerUrl = "https://sepolia.infura.io/v3/302e5352e5f243cabc272d43832be4cf"; 
-const contractAddress = "0x6EA308C30A4cE4791A8D256b7aF7fE704C5E6105"; 
+const contractAddress = "0x854B5B5104a6aDEa76B8f832ba40c439818bd8d6"; 
 
 const WalletEscrow = () => {
     const [address, setAddress] = useState('');
@@ -22,10 +22,8 @@ const WalletEscrow = () => {
             const provider = new ethers.JsonRpcProvider(providerUrl);
             const contract = new ethers.Contract(contractAddress, WalletEscrowABI.abi, provider);
             
-            console.log("Se verifica adresa:", address); 
     
             const balance = await contract.escrowadrese(address);
-            console.log("Balanta:", balance.toString());
             
             setBalance(ethers.formatEther(balance));
         } catch (error) {
@@ -57,8 +55,6 @@ const WalletEscrow = () => {
             const senderAddress = await signer.getAddress();
             const senderBalance = await provider.getBalance(senderAddress);
             
-            console.log("Sender balance:", ethers.formatEther(senderBalance));
-            console.log("Value to send:", ethers.formatEther(valueToSend));
     
             if (senderBalance < valueToSend) {
                 alert("Insufficient funds!");
@@ -69,8 +65,6 @@ const WalletEscrow = () => {
             await tx.wait();
             console.log(`Sent ${amount} ETH to contract`);
         } catch (error) {
-            console.error("Error during payment:", error);
-            alert("Transaction failed: " + error.message);
         }
     };
     

@@ -28,6 +28,28 @@ contract NFTWallet is IERC721Receiver {
         listNftContract = ListNFT(_listNftAddress); 
     }
 
+    uint256 public dataaleasa = 1;
+
+    function data() external view returns (uint256) {
+        return dataaleasa;
+    }
+
+    function setDataa() public {
+        dataaleasa = 1;
+    }
+
+    function setDatab() public {
+        dataaleasa = 2;
+    }
+
+    function setDatac() public {
+        dataaleasa = 3;
+    }
+
+    function setDatad() public {
+        dataaleasa = 4;
+    }
+
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) 
         external override returns (bytes4) {
         
@@ -38,27 +60,43 @@ contract NFTWallet is IERC721Receiver {
         }
 
         nftOwner.nftContracts[msg.sender].nftIds.push(tokenId);
-        nftOwner.nftContracts[msg.sender].available = true;
+        nftOwner.nftContracts[msg.sender].available = false;
 
-        emit NFTReceived(from, msg.sender, tokenId);
+        emit NFTReceived(msg.sender, from, tokenId);
 
-        listNftContract.createBid(msg.sender, tokenId);
-
+        listNftContract.createBid(msg.sender, tokenId, 0, dataaleasa, from);
         return this.onERC721Received.selector;
     }
 
-    function changeowner(address owner, address newOwner) external {
+    function changeOwner(address owner, address newOwner, address contractAddress, uint256 tokenId) external {
         require(listNftOwner[owner].contractAddresses.length > 0, "No NFTs to transfer");
-        
+
         NftOwner storage oldOwner = listNftOwner[owner];
         NftOwner storage newOwnerStruct = listNftOwner[newOwner];
 
-        for (uint256 i = 0; i < oldOwner.contractAddresses.length; i++) {
-            address contractAddress = oldOwner.contractAddresses[i];
-            newOwnerStruct.nftContracts[contractAddress] = oldOwner.nftContracts[contractAddress];
+        
+
+
+        newOwnerStruct.nftContracts[contractAddress].nftIds.push(tokenId);
+        
+        uint256[] storage oldNftIds = oldOwner.nftContracts[contractAddress].nftIds;
+        for (uint256 i = 0; i < oldNftIds.length; i++) {
+            if (oldNftIds[i] == tokenId) {
+                oldNftIds[i] = oldNftIds[oldNftIds.length - 1];
+                oldNftIds.pop();
+                break;
+            }
         }
 
-        delete listNftOwner[owner];
+        if (oldOwner.nftContracts[contractAddress].nftIds.length == 0) {
+            for (uint i = 0; i < oldOwner.contractAddresses.length; i++) {
+                if (oldOwner.contractAddresses[i] == contractAddress) {
+                    oldOwner.contractAddresses[i] = oldOwner.contractAddresses[oldOwner.contractAddresses.length - 1];
+                    oldOwner.contractAddresses.pop();
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -71,7 +109,7 @@ contract NFTWallet is IERC721Receiver {
         for (uint256 i = 0; i < ids.length; i++) {
             if (ids[i] == id) {
                 idFound = true;
-                IERC721(nftContract).safeTransferFrom(owner, msg.sender, id); //s-ar putea sa dea eroare
+                IERC721(nftContract).safeTransferFrom(address(this), owner, id);
                 ids[i] = ids[ids.length - 1];
                 ids.pop();
                 break;

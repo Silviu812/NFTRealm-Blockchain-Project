@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 async function main() {
     const NftWalletContract = await ethers.getContractFactory("NFTWallet");
     
-    const nftWalletContract = await NftWalletContract.deploy('0x8c72Ae09Cd37e061f57340aCAE48210B42c181f8');
+    const nftWalletContract = await NftWalletContract.deploy('0xf9393A79D6B824B790B19b9cbC6F8206BbFc363d');
 
     await nftWalletContract.deployed;
 

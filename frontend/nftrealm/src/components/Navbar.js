@@ -11,6 +11,7 @@ const Navbar = ({ onConnect }) => {
     const [isProfileOpen, setProfileOpen] = useState(false); 
     const [address, setAddress] = useState('');
     const [escrowBalance, setEscrowBalance] = useState(0); 
+    const [escrowPower, setEscrowPower] = useState(0);
 
     useEffect(() => {
         const fetchEscrowBalance = async () => {
@@ -20,6 +21,9 @@ const Navbar = ({ onConnect }) => {
                 
                 const balance = await contract.escrowadrese(address);
                 setEscrowBalance(ethers.formatEther(balance));
+                const power = await contract.escrowpower(address);
+                setEscrowPower(ethers.formatEther(power));
+
             }
         };
 
@@ -50,12 +54,18 @@ const Navbar = ({ onConnect }) => {
                     <li className="nav-item">
                         <Link to="/listnft" className="nav-links">List Your NFT!</Link>
                     </li>
+                    <li className="nav-item">
+                        <Link to="/withdrawnft" className="nav-links">Withdraw NFT</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to="/paynft" className="nav-links">Pay NFT</Link>
+                    </li>
                 </ul>
                 <div className="nav-right">
                     {address ? (
                         <div className="balance-container">
                             <span className="balance">
-                                Power to bid: {parseFloat(escrowBalance * 10).toFixed(2)} ETH
+                                Power to bid: {parseFloat(escrowPower).toFixed(2)} ETH
                             </span>
                             {parseFloat(escrowBalance) < 0.001 ? (
                                 <button 

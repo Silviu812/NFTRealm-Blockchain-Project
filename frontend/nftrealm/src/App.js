@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ListNFT from './components/ListNFT';
+import MainPage from './components/MainPage';
+import WithdrawNFT from './components/WithdrawNFT';
+import PayNFT from './components/PayNFT';
 import { ethers, Wallet } from 'ethers';
 
 
@@ -45,8 +48,10 @@ function App() {
         <Router>
             <Navbar onConnect={connectWallet} address={address} balance={balance} />
             <Routes>
-                <Route path="/" element={<div>Home</div>} />
+                <Route path="/mainpage" element={<MainPage />} />
                 <Route path="/listnft" element={<ListNFT />} />
+                <Route path="/withdrawnft" element={<WithdrawNFT />} />
+                <Route path="/paynft" element={<PayNFT />} />
             </Routes>
         </Router>
 

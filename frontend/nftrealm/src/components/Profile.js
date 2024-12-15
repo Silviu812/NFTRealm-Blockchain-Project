@@ -7,6 +7,7 @@ import { WALLETESCROW_ADDRESS, PROVIDERINFURA } from '../config.js';
 const Profile = ({ isOpen, onClose, address }) => {
     const [escrowBalance, setEscrowBalance] = useState(0);
     const [amount, setAmount] = useState(''); 
+    const [escrowPower, setEscrowPower] = useState(0);
 
     useEffect(() => {
         const fetchEscrowBalance = async () => {
@@ -16,6 +17,8 @@ const Profile = ({ isOpen, onClose, address }) => {
                 
                 const balance = await contract.escrowadrese(address);
                 setEscrowBalance(ethers.formatEther(balance));
+                const power = await contract.escrowpower(address);
+                setEscrowPower(ethers.formatEther(power));
             }
         };
 
@@ -88,7 +91,7 @@ const Profile = ({ isOpen, onClose, address }) => {
                 <h2>Profile</h2>
                 {address && <p>Address: {address}</p>}
                 <p>Escrow Balance: {escrowBalance} ETH</p>
-                <p>Power to Bid: {escrowBalance * 10} ETH</p>
+                <p>Power to Bid: {escrowPower} ETH</p>
 
                 <input
                     type="text"
