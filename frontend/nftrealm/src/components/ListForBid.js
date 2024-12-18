@@ -10,11 +10,19 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
     const [minSale, setMinSale] = useState('');
     const [duration, setDuration] = useState('1');
     const [totalCost, setTotalCost] = useState(0.01);
+    const [gasCostSetDatad, setGasCostSetDatad] = useState(null);
+    const [gasCostTransfer, setGasCostTransfer] = useState(null);
+    const [totalGasCost, setTotalGasCost] = useState(null);
+
+
 
     useEffect(() => {
         setTotalCost(minSaleEnabled ? 0.02 : 0.01);
     }, [minSaleEnabled]);
 
+
+
+    
     const handleDurationChange = (e) => {
         const selectedDuration = e.target.value;
         setDuration(selectedDuration);
@@ -35,6 +43,8 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
         setDate(newDate.toISOString().split('T')[0]);
     };
 
+    
+    
     const handleListForBid = async () => {
         if (!date) {
             alert("Please fill in all fields.");
@@ -71,6 +81,7 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
     
             const selectedDuration = duration;
             let _value;
+
     
             if (selectedDuration === '2') {
                 _value = 4;
@@ -115,6 +126,111 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
         }
     };
     
+    
+    const estimateSetDatadGas = async () => {
+        if (!window.ethereum) {
+            alert("MetaMask not installed!");
+            return;
+        }
+    
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(nftContractAddress, NFTWalletABI.abi, signer);
+    
+
+        try {
+            const gasEstimate = await contract.runner.estimateGas({
+                to: nftContractAddress,
+                data: contract.interface.encodeFunctionData("setDatad", [])
+            });
+            setGasCostSetDatad(gasEstimate);      
+        } catch (error) {
+            console.error("Eroare:", error);
+        }
+    };
+
+    const estimateTransferGas = async () => {
+        if (!window.ethereum) {
+            alert("MetaMask not installed!");
+            return;
+        }
+    
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+    
+        const senderAddress = await signer.getAddress();
+        const recipientAddress = nftContractAddress;
+        const tokenId = nftId; 
+    
+
+        const abi = [
+            "function safeTransferFrom(address from, address to, uint256 tokenId)"
+        ];
+    
+        const nftContract = new ethers.Contract(nftadresa, abi, signer);
+    
+        try {
+    
+            
+            const data = nftContract.interface.encodeFunctionData("safeTransferFrom", [
+                senderAddress,
+                recipientAddress,
+                tokenId
+            ]);
+    
+            
+            const gasEstimate = await provider.estimateGas({
+                to: nftadresa,
+                from: senderAddress,
+                data: data
+            });
+    
+            setGasCostTransfer(gasEstimate);
+        } catch (error) {
+            console.error("Error estimating gas for safeTransferFrom:", error);
+        }
+    };
+    
+    
+    const estimateTotalGasCost = async () => {
+        if (!gasCostSetDatad || !gasCostTransfer) return;
+    
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            let gasPrice;
+            gasPrice = (await provider.getFeeData()).gasPrice
+            // eslint-disable-next-line no-undef
+            const setDatadGas = BigInt(gasCostSetDatad.toString());
+            // eslint-disable-next-line no-undef
+            const transferGas = BigInt(gasCostTransfer.toString());
+    
+            const totalCost = (setDatadGas + transferGas) * gasPrice; 
+            setTotalGasCost(totalCost);
+        } catch (error) {
+            console.error("Error calculating total gas cost:", error.message);
+        }
+    };
+    
+
+    useEffect(() => {
+        const fetchGasEstimates = async () => {
+            try {
+                await estimateSetDatadGas();
+                await estimateTransferGas();
+                await estimateTotalGasCost();
+            } catch (error) {
+                console.error("Error fetching gas estimates:", error);
+            }
+        };
+    
+        fetchGasEstimates();
+    
+        const interval = setInterval(fetchGasEstimates, 5000);
+        return () => clearInterval(interval);
+    }, [gasCostSetDatad, gasCostTransfer]);
+    
+    
+
 
     if (!isOpen) return null;
 
@@ -194,6 +310,12 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
                 )}
 
                 <h3>Total Cost: {totalCost} ETH</h3>
+                <h3>
+                    Estimated Gas Cost:{" "}
+                    {totalGasCost
+                        ? `${parseFloat(ethers.formatEther(totalGasCost)).toFixed(5)} ETH`
+                        : "Calculating..."}
+                </h3>
 
                 <div className="button-container">
                     <button className="list-button" onClick={handleListForBid}>
