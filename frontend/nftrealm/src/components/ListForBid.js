@@ -114,6 +114,7 @@ const ListForBid = ({ isOpen, onClose, nftId, nftName, nftImageUrl, nftadresa })
                 senderAddress, 
                 targetAddress, 
                 nftTokenId,
+                { gasLimit : (gasCostSetDatad + gasCostTransfer) }
             );
         
             await transferTx.wait();
