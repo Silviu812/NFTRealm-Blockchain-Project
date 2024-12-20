@@ -20,6 +20,11 @@ contract ListNFT {
     event BidCreated(uint256 bidId, address indexed nftAddress, address indexed bidder);
     event NewBidPlaced(uint256 bidId, address indexed bidder, uint256 amount);
 
+    modifier bidActiv(uint _bidid) {
+        require(bids[_bidid].endtime > block.timestamp, "Bid ended");
+        _;
+    }
+
     constructor() {
         bidid++;
         bids[bidid] = Bid({
@@ -63,53 +68,24 @@ contract ListNFT {
         emit BidCreated(bidid, _thenft, msg.sender);
     }
 
-    function bidForNft(uint _bidid, uint256 _amount) public {
-        require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
+    function bidForNft(uint _bidid, uint256 _amount) public bidActiv(_bidid) {
         require(bids[_bidid].amount < _amount, "Bid is too low");
         bids[_bidid].maxbidder = msg.sender;
         bids[_bidid].amount = _amount;
         emit NewBidPlaced(_bidid, msg.sender, _amount);
     }
 
-    function getBidCount() public view returns (uint256) {
-        return bidid;
-    }
-
-    function getBidInfo(uint _bidid) public view returns (address, address, address, uint256, uint256, uint256, uint256) {
-        require(_bidid > 0 && _bidid <= bidid, "Bid does not exist");
-        return (
-            bids[_bidid].thenft, 
-            bids[_bidid].maxbidder,
-            bids[_bidid].origialowner, 
-            bids[_bidid].amount, 
-            bids[_bidid].endtime, 
-            bids[_bidid].starttime,
-            bids[_bidid].tokenId
-        );   
-    }
-
-    function getBidWinner(uint _bidid) public view returns (address, uint256) {
-        require(bids[_bidid].endtime < block.timestamp, "Bid has not ended");
-        return (bids[_bidid].maxbidder, bids[_bidid].amount);
-    }
-
-    function newbidamount(uint _bidid, uint256 _amount) public {
-        require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
+    function newbidamount(uint _bidid, uint256 _amount) public bidActiv(_bidid) {
         require(bids[_bidid].amount < _amount, "Bid is too low");
         require(bids[_bidid].protection < _amount, "Price is protected, Bid is too low");
         bids[_bidid].amount = _amount;
         bids[_bidid].maxbidder = msg.sender;
     }
 
-    function newbidnoprotection(uint _bidid, uint256 _amount) public {
-        require(bids[_bidid].endtime > block.timestamp, "Bid has ended");
+    function newbidnoprotection(uint _bidid, uint256 _amount) public bidActiv(_bidid) {
         require(bids[_bidid].amount < _amount, "Bid is too low");
         bids[_bidid].amount = _amount;
         bids[_bidid].maxbidder = msg.sender;
-    }
-
-    function changeownerfrombid(uint _bidid) public {
-        require(bids[_bidid].endtime < block.timestamp, "Bid has not ended");
-        bids[_bidid].origialowner = bids[_bidid].maxbidder;
+        emit NewBidPlaced(_bidid, msg.sender, _amount);
     }
 }
